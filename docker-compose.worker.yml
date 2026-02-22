@@ -1,0 +1,14 @@
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    network_mode: host
+    environment:
+      YOUDL_CONTROLLER: ${YOUDL_CONTROLLER}
+      YOUDL_AUTH_TOKEN: ${YOUDL_AUTH_TOKEN}
+      YOUDL_WORKER_ID: ${YOUDL_WORKER_ID}
+      YOUDL_UPLOAD_LIMIT: ${YOUDL_UPLOAD_LIMIT:-0}
+      # Cookies are fetched automatically from the controller on startup.
+      # Set YOUDL_C_YOUTUBE / YOUDL_C_REDDIT on the controller to distribute them.
+    restart: unless-stopped

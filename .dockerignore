@@ -1,0 +1,10 @@
+bin/
+storage/
+*.db
+*.db-wal
+*.db-shm
+.youdl
+.youdl_token
+.env
+.git
+.gitignore

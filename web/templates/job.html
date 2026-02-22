@@ -1,0 +1,135 @@
+{{template "layout" .}}
+{{define "content"}}
+<div class="card" id="job-card" data-job-id="{{.Job.ID}}" data-status="{{.Job.Status}}">
+    {{if .Job.Title}}<h2 style="margin-bottom:1rem">{{.Job.Title}}</h2>{{end}}
+
+    <p style="margin-bottom:1rem">
+        Status: <span class="status status-{{.Job.Status}}" id="job-status">
+            {{if or (eq .Job.Status "pending") (eq .Job.Status "queued") (eq .Job.Status "running")}}<span class="spinner"></span>{{end}}
+            {{.Job.Status}}
+        </span>
+    </p>
+
+    {{if .Job.Error}}
+    <p class="error">Error: {{.Job.Error}}</p>
+    {{end}}
+
+    {{if eq .Job.Status "ready"}}
+    <form method="POST" action="/job/{{.Job.ID}}/select">
+        <div class="form-group">
+            <label>Mode</label>
+            <select name="mode" id="mode-select" onchange="toggleFormatFields()">
+                <option value="video+audio">Video + Audio (merged)</option>
+                <option value="video">Video Only</option>
+                <option value="audio">Audio Only</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="video-group">
+            <label>Video Quality</label>
+            <select name="video_itag">
+                {{range .VideoFormats}}
+                <option value="{{.Itag}}">{{.Label}}</option>
+                {{end}}
+            </select>
+        </div>
+
+        <div class="form-group" id="audio-group" style="display:none">
+            <label>Audio Quality</label>
+            <select name="audio_itag">
+                {{range .AudioFormats}}
+                <option value="{{.Itag}}">{{.Label}}</option>
+                {{end}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Trim (optional)</label>
+            <select name="trim_mode" id="trim-mode" onchange="toggleTrimFields()">
+                <option value="">No trim</option>
+                <option value="range">From / To timestamp</option>
+                <option value="first">First N seconds</option>
+                <option value="last">Last N seconds</option>
+            </select>
+        </div>
+
+        <div id="trim-range" style="display:none">
+            <div class="form-group">
+                <label>From (HH:MM:SS)</label>
+                <input type="text" name="trim_start" placeholder="00:01:30">
+            </div>
+            <div class="form-group">
+                <label>To (HH:MM:SS)</label>
+                <input type="text" name="trim_end" placeholder="00:05:00">
+            </div>
+        </div>
+
+        <div id="trim-first" style="display:none">
+            <div class="form-group">
+                <label>Seconds</label>
+                <input type="number" name="trim_secs" min="1" placeholder="30">
+            </div>
+        </div>
+
+        <div id="trim-last" style="display:none">
+            <div class="form-group">
+                <label>Seconds</label>
+                <input type="number" name="trim_secs" min="1" placeholder="30">
+            </div>
+        </div>
+
+        <button type="submit">Start Download</button>
+    </form>
+
+    <script>
+    function toggleFormatFields() {
+        var mode = document.getElementById('mode-select').value;
+        document.getElementById('video-group').style.display = (mode === 'audio') ? 'none' : '';
+        document.getElementById('audio-group').style.display = (mode === 'video') ? 'none' : (mode === 'audio') ? '' : 'none';
+    }
+    function toggleTrimFields() {
+        var mode = document.getElementById('trim-mode').value;
+        var sections = {
+            'range': document.getElementById('trim-range'),
+            'first': document.getElementById('trim-first'),
+            'last':  document.getElementById('trim-last')
+        };
+        for (var key in sections) {
+            var active = (key === mode);
+            sections[key].style.display = active ? '' : 'none';
+            var inputs = sections[key].querySelectorAll('input');
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].disabled = !active;
+            }
+        }
+    }
+    toggleTrimFields();
+    </script>
+    {{end}}
+
+    {{if eq .Job.Status "done"}}
+    <a href="/job/{{.Job.ID}}/download" class="btn" style="margin-top:1rem">Download File</a>
+    {{if .Job.ProxyNote}}<p style="margin-top:0.5rem;color:#888;font-size:0.85em">{{.Job.ProxyNote}}</p>{{end}}
+    {{end}}
+</div>
+
+{{if or (eq .Job.Status "pending") (eq .Job.Status "queued") (eq .Job.Status "running")}}
+<script>
+(function() {
+    var card = document.getElementById('job-card');
+    var jobId = card.dataset.jobId;
+    var currentStatus = card.dataset.status;
+    setInterval(function() {
+        fetch('/api/job/' + jobId + '/status')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.job && data.job.status !== currentStatus) {
+                    window.location.reload();
+                }
+            })
+            .catch(function() {});
+    }, 2000);
+})();
+</script>
+{{end}}
+{{end}}

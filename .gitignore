@@ -1,0 +1,14 @@
+bin/
+/controller
+/worker
+*.db
+*.db-wal
+*.db-shm
+storage/
+.youdl
+.youdl_token
+.env
+*.txt
+*.cookie
+cookies/
+proxies*

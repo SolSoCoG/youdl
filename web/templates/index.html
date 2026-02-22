@@ -1,0 +1,16 @@
+{{template "layout" .}}
+{{define "content"}}
+<div class="card">
+    <form method="POST" action="/submit">
+        <!-- Honeypot: hidden from real users, bots fill it in -->
+        <div style="display:none" aria-hidden="true">
+            <input type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label for="url">Video URL</label>
+            <input type="url" id="url" name="url" placeholder="https://www.youtube.com/watch?v=... or any supported site" required>
+        </div>
+        <button type="submit">Download</button>
+    </form>
+</div>
+{{end}}

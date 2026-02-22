@@ -1,0 +1,26 @@
+services:
+  controller:
+    build:
+      context: .
+      dockerfile: Dockerfile.controller
+    network_mode: host
+    environment:
+      YOUDL_LISTEN: "127.0.0.1:8080"
+      YOUDL_AUTH_TOKEN: ${YOUDL_AUTH_TOKEN}
+      YOUDL_DB_PATH: /data/youdl.db
+      YOUDL_STORAGE_DIR: /data/storage
+      YOUDL_JOB_TTL: ${YOUDL_JOB_TTL:-30m}
+      # Per-site cookie files (Netscape format). Workers fetch these automatically on startup.
+      # Set YOUDL_C_YOUTUBE=/cookies/youtube.txt and mount the file, e.g.:
+      #   YOUDL_C_YOUTUBE: /cookies/youtube.txt
+      #   YOUDL_C_REDDIT: /cookies/reddit.txt
+      # then uncomment the volume below:
+      #   - ./cookies:/cookies:ro
+      YOUDL_C_YOUTUBE: ${YOUDL_C_YOUTUBE:-}
+      YOUDL_C_REDDIT: ${YOUDL_C_REDDIT:-}
+    volumes:
+      - controller-data:/data
+    restart: unless-stopped
+
+volumes:
+  controller-data:
