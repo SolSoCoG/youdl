@@ -26,11 +26,11 @@ func main() {
 	defer srv.Close()
 
 	httpSrv := &http.Server{
-		Addr:         cfg.Listen,
-		Handler:      srv,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 5 * time.Minute,
-		IdleTimeout:  120 * time.Second,
+		Addr:              cfg.Listen,
+		Handler:           srv,
+		ReadHeaderTimeout: 30 * time.Second,
+		WriteTimeout:      5 * time.Minute,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
